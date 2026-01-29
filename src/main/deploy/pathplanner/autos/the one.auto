@@ -1,0 +1,73 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Start-Inner-I-L4"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.5
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Score-L2"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "I-Station-L"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Eat"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "L-Station-A-L1"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "L3"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.75
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Score-L3"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "A-L-Station"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": false,
+  "folder": null,
+  "choreoAuto": false
+}
