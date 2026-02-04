@@ -1,12 +1,11 @@
 package frc.robot;
 
-import org.opencv.core.Point;
-
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.util.DriveFeedforwards;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -15,6 +14,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.Constants.SwerveDriveConstants;
+import frc.robot.autos.Autos;
 import frc.robot.commands.DriveSwerve;
 import frc.robot.speedAlterators.LookToward;
 import frc.robot.subsystems.SwerveModule;
@@ -44,7 +44,7 @@ public class RobotContainer {
   // Speed alterators
 
   // * Odometry and Vision
-  private final LimelightOdometryCamera m_limelight3G_Back;
+  // private final LimelightOdometryCamera m_limelight3G_Back;
   private final LimelightOdometryCamera m_limelight3G_Front;
   private final BlueShiftOdometry m_odometry;
   private final double m_visionPeriod = 0.02;
@@ -70,7 +70,7 @@ public class RobotContainer {
     }
 
     // ! Odometry and Vision
-    this.m_limelight3G_Back = new LimelightOdometryCamera(Constants.Vision.Limelight3G_Back.kName, true, true, VisionOdometryFilters::visionFilter);
+    // this.m_limelight3G_Back = new LimelightOdometryCamera(Constants.Vision.Limelight3G_Back.kName, true, true, VisionOdometryFilters::visionFilter);
     this.m_limelight3G_Front = new LimelightOdometryCamera(Constants.Vision.Limelight3G_Front.kName, true, true, VisionOdometryFilters::visionFilter);
     this.m_odometry = new BlueShiftOdometry(
       Constants.SwerveDriveConstants.PhysicalModel.kDriveKinematics,
@@ -78,10 +78,9 @@ public class RobotContainer {
       m_swerveDrive::getModulePositions,
       new Pose2d(),
       m_visionPeriod,
-      m_limelight3G_Back,
+      // m_limelight3G_Back,
       m_limelight3G_Front
     );
-    this.m_limelight3G_Back.enable();
     this.m_limelight3G_Front.enable();
     this.m_odometry.startVision();
 
@@ -115,11 +114,18 @@ public class RobotContainer {
     );
 
     // Build auto chooser
-    this.m_autonomousChooser = AutoBuilder.buildAutoChooser();
+    this.m_autonomousChooser = new SendableChooser<Command>();
+
+    try {
+      m_autonomousChooser.addOption("TestAuto", Autos.testAuto());
+    } catch (Exception e) {
+      DriverStation.reportError("Error building autos", e.getStackTrace());
+      Elastic.sendNotification(new Notification(NotificationLevel.ERROR, "Error building autos", e.getMessage()));
+    }
 
     SmartDashboard.putData("AutoChooser", m_autonomousChooser);
 
-    this.lookTowards = new LookToward(m_odometry::getEstimatedPosition, new Point(4.62, 4.03));
+    this.lookTowards = new LookToward(m_odometry::getEstimatedPosition, new Translation2d(4.62, 4.03));
     
     // ! Dashboard testing commands
     // Chassis

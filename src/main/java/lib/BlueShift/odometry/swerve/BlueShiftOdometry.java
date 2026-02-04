@@ -64,6 +64,8 @@ public class BlueShiftOdometry extends SubsystemBase {
         this.m_visionNotifier = new Notifier(this::updateVision);
         this.m_visionPeriod = visionPeriod;
 
+        this.m_poseEstimator.resetPose(new Pose2d(initialPose.getX(), initialPose.getY(), gyroAngleSupplier.get()));
+
         // Commands
         SmartDashboard.putData("BlueShiftOdometry/SetVisionPose", new InstantCommand(this::setVisionPose).ignoringDisable(true));
     }
@@ -129,6 +131,8 @@ public class BlueShiftOdometry extends SubsystemBase {
             m_gyroAngleSupplier.get(),
             m_modulePositionsSupplier.get()
         );
+
+
 
         // Update field pose
         m_field.setRobotPose(m_poseEstimator.getEstimatedPosition());

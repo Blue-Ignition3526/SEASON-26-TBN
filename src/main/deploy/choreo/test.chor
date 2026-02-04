@@ -1,5 +1,5 @@
 {
- "name":"testing",
+ "name":"test",
  "version":2,
  "type":"Swerve",
  "variables":{
@@ -76,7 +76,7 @@
  },
  "generationFeatures":[],
  "codegen":{
-  "root":"../../../deploy/choreo",
+  "root":null,
   "genVars":true,
   "genTrajData":true,
   "useChoreoLib":true
