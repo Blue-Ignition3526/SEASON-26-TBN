@@ -1,4 +1,4 @@
-package frc.robot.subsystems.SwerveDrive;
+package frc.robot.subsystems.SwerveChassis;
 
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import org.littletonrobotics.junction.Logger;
@@ -12,7 +12,7 @@ import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants.SwerveDriveConstants;
 import lib.BlueShift.control.SpeedAlterator;
 
-public class SwerveDriveIOSim implements SwerveDriveIO {
+public class SwerveChassisIOSim implements SwerveChassisIO {
     // Create all swerve modules
     private final SwerveModuleSim m_frontLeft;
     private final SwerveModuleSim m_frontRight;
@@ -26,7 +26,7 @@ public class SwerveDriveIOSim implements SwerveDriveIO {
 
     private SpeedAlterator speedAlterator = null;
 
-    public SwerveDriveIOSim() {
+    public SwerveChassisIOSim() {
         this.m_frontLeft = new SwerveModuleSim("FrontLeft");
         this.m_frontRight = new SwerveModuleSim("FrontRight");
         this.m_backLeft = new SwerveModuleSim("BackLeft");

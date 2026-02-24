@@ -5,7 +5,6 @@ import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.util.DriveFeedforwards;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -20,9 +19,11 @@ import frc.robot.speedAlterators.LookToward;
 import frc.robot.subsystems.SwerveModule;
 import frc.robot.subsystems.Gyro.Gyro;
 import frc.robot.subsystems.Gyro.GyroIOPigeon;
-import frc.robot.subsystems.SwerveDrive.SwerveDrive;
-import frc.robot.subsystems.SwerveDrive.SwerveDriveIOReal;
-import frc.robot.subsystems.SwerveDrive.SwerveDriveIOSim;
+import frc.robot.subsystems.Hopper.Hopper;
+import frc.robot.subsystems.Indexer.Indexer;
+import frc.robot.subsystems.SwerveChassis.SwerveChassis;
+import frc.robot.subsystems.SwerveChassis.SwerveChassisIOReal;
+import frc.robot.subsystems.SwerveChassis.SwerveChassisIOSim;
 import lib.Elastic;
 import lib.Elastic.Notification;
 import lib.Elastic.Notification.NotificationLevel;
@@ -39,9 +40,10 @@ public class RobotContainer {
   private final CustomController OPERATOR = new CustomController(1, CustomControllerType.XBOX);
 
   // Swerve Drive
-  private final SwerveDrive m_swerveDrive;
+  private final SwerveChassis m_swerveDrive;
 
-  // Speed alterators
+  private final Indexer indexer;
+  private final Hopper hopper;
 
   // * Odometry and Vision
   // private final LimelightOdometryCamera m_limelight3G_Back;
@@ -51,6 +53,7 @@ public class RobotContainer {
 
   private final SpeedAlterator lookTowards;
 
+  // Speed alterators
   // * Autonomous
   private final SendableChooser<Command> m_autonomousChooser;
 
@@ -58,7 +61,7 @@ public class RobotContainer {
     //! Subsystems
     // * Swerve Drive
     if (Robot.isReal()) {
-      this.m_swerveDrive = new SwerveDrive(new SwerveDriveIOReal(
+      this.m_swerveDrive = new SwerveChassis(new SwerveChassisIOReal(
         new SwerveModule(Constants.SwerveDriveConstants.SwerveModuleConstants.kFrontLeftOptions),
         new SwerveModule(Constants.SwerveDriveConstants.SwerveModuleConstants.kFrontRightOptions),
         new SwerveModule(Constants.SwerveDriveConstants.SwerveModuleConstants.kBackLeftOptions),
@@ -66,8 +69,11 @@ public class RobotContainer {
         new Gyro(new GyroIOPigeon(Constants.SwerveDriveConstants.kGyroDevice))
       ));
     } else {
-      this.m_swerveDrive = new SwerveDrive(new SwerveDriveIOSim());
+      this.m_swerveDrive = new SwerveChassis(new SwerveChassisIOSim());
     }
+
+    this.indexer = new Indexer();
+    this.hopper = new Hopper();
 
     // ! Odometry and Vision
     // this.m_limelight3G_Back = new LimelightOdometryCamera(Constants.Vision.Limelight3G_Back.kName, true, true, VisionOdometryFilters::visionFilter);

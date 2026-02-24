@@ -1,4 +1,4 @@
-package frc.robot.subsystems.SwerveDrive;
+package frc.robot.subsystems.SwerveChassis;
 
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
@@ -19,7 +19,7 @@ import org.littletonrobotics.junction.Logger;
 
 import choreo.trajectory.SwerveSample;
 
-public class SwerveDriveIOReal implements SwerveDriveIO {
+public class SwerveChassisIOReal implements SwerveChassisIO {
     // * Swerve modules
     public final SwerveModule frontLeft;
     public final SwerveModule frontRight;
@@ -44,7 +44,7 @@ public class SwerveDriveIOReal implements SwerveDriveIO {
      * @param backRight Back Right Swerve Module
      * @param gyro Gyroscope
      */
-    public SwerveDriveIOReal(SwerveModule frontLeft, SwerveModule frontRight, SwerveModule backLeft, SwerveModule backRight, Gyro gyro) {
+    public SwerveChassisIOReal(SwerveModule frontLeft, SwerveModule frontRight, SwerveModule backLeft, SwerveModule backRight, Gyro gyro) {
         // Store the modules
         this.frontLeft = frontLeft;
         this.frontRight = frontRight;

@@ -1,14 +1,16 @@
 package lib.BlueShift.constants;
 
+import com.ctre.phoenix6.CANBus;
+
 public class CTRECANDevice {
     int deviceID;
-    String canbus;
+    CANBus canbus;
 
     public CTRECANDevice(int deviceID) {
-        this(deviceID, "*");
+        this(deviceID, new CANBus());
     }
 
-    public CTRECANDevice(int deviceID, String canbus) {
+    public CTRECANDevice(int deviceID, CANBus canbus) {
         this.deviceID = deviceID;
         this.canbus = canbus;
     }
@@ -17,7 +19,7 @@ public class CTRECANDevice {
         return deviceID;
     }
 
-    public String getCanbus() {
+    public CANBus getCanbus() {
         return canbus;
     }
 }

@@ -11,6 +11,7 @@ import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.FieldConstants;
 import lib.BlueShift.math.BlueMathUtils;
@@ -38,6 +39,8 @@ public class Shooter extends SubsystemBase {
   private double setpoint;
   private final VelocityVoltage controlRequest;
   private final Supplier<Pose2d> poseSuppler;
+
+  private boolean automatic = true;
 
   public Shooter(Supplier<Pose2d> poseSupplier) {
     leftMotor = new TalonFX(kLeftMotorId);
@@ -74,7 +77,20 @@ public class Shooter extends SubsystemBase {
   }
 
   public void set(double rps) {
-    controlRequest.withVelocity(rps);
+    leftMotor.setControl(controlRequest.withVelocity(rps));
+  }
+
+  public void stop() {
+    // This should also stop the follower
+    leftMotor.stopMotor();
+  }
+
+  public double getRPS() {
+    return leftMotor.getVelocity().getValueAsDouble();
+  }
+
+  public boolean ready() {
+    return Math.abs(getRPS() - setpoint) < kEpsilon;
   }
 
   public double getSetpointWithMap(Pose2d pose) {
@@ -136,13 +152,27 @@ public class Shooter extends SubsystemBase {
     return new Distance[] { lower, higher};
   }
   
-  
+  public Command setCommand(double rps) {
+    return run(()->{automatic = false; set(rps);});
+  }
+
+  public Command shootCommand() {
+    return runEnd(()->{automatic=true;}, this::stop);
+  }
+
+  public Command stopCommand() {
+    return runOnce(this::stop);
+  }
 
   @Override
   public void periodic() {
-    setpoint = getSetpointWithMap(poseSuppler.get());
+    if(automatic) {
+      setpoint = getSetpointWithMap(poseSuppler.get());
+      // Check setpoint gives expected values, convert if needed.
+      // set(setpoint);
+    }
     
-    Logger.recordOutput("Shooter/Speed", leftMotor.getVelocity().getValueAsDouble());
+    Logger.recordOutput("Shooter/Speed", getRPS());
     Logger.recordOutput("Shooter/setpoint", setpoint);
   }
 }

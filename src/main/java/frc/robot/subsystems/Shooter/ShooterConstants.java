@@ -20,9 +20,18 @@ public class ShooterConstants {
   public static final double kI = 0.0;
   public static final double kD = 0.0;
 
+  // TODO: set manual speeds (RPS)
+  public static final double manual1 = 0;
+  public static final double manual2 = 0;
+  public static final double manual3 = 0;
+  public static final double manual4 = 0;
+
+  // TODO: calibrate automatic speeds (RPS)
   public static final TreeMap<Distance, Double> kSpeedsMap = new TreeMap<>();
   static {
-    kSpeedsMap.put(Meters.of(0), 3000.0);
-    kSpeedsMap.put(Meters.of(10), 5000.0);
+    kSpeedsMap.put(Meters.of(0), 60.0);
+    kSpeedsMap.put(Meters.of(10), 83.3);
   }
+
+  public static final double kEpsilon = 0.5;
 }

@@ -14,6 +14,8 @@ import lib.BlueShift.constants.PIDFConstants;
 import lib.BlueShift.constants.SwerveModuleOptions;
 import lib.BlueShift.utils.SwerveChassis;
 import static edu.wpi.first.units.Units.*;
+
+import com.ctre.phoenix6.CANBus;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.path.PathConstraints;
 
@@ -57,7 +59,7 @@ public class Constants {
         }
 
         //* Gyroscope (Pigeon 2.0)
-        public static final CTRECANDevice kGyroDevice = new CTRECANDevice(34, "*");
+        public static final CTRECANDevice kGyroDevice = new CTRECANDevice(34, new CANBus("*"));
 
         public static final double kJoystickDeadband = 0.09;
         //* Physical model of the robot
@@ -122,25 +124,25 @@ public class Constants {
             public static final SwerveModuleOptions kFrontLeftOptions = new SwerveModuleOptions()
                 .setDriveMotorID(5)
                 .setTurningMotorID(6)
-                .setAbsoluteEncoderCANDevice(new CTRECANDevice(7, "*"))
+                .setAbsoluteEncoderCANDevice(new CTRECANDevice(7, new CANBus("*")))
                 .setName("Front Left");
             
             public static final SwerveModuleOptions kFrontRightOptions = new SwerveModuleOptions()
                 .setDriveMotorID(11)
                 .setTurningMotorID(12)
-                .setAbsoluteEncoderCANDevice(new CTRECANDevice(13, "*"))
+                .setAbsoluteEncoderCANDevice(new CTRECANDevice(13, new CANBus("*")))
                 .setName("Front Right");
 
             public static final SwerveModuleOptions kBackLeftOptions = new SwerveModuleOptions()
                 .setDriveMotorID(8)
                 .setTurningMotorID(9)
-                .setAbsoluteEncoderCANDevice(new CTRECANDevice(10, "*"))
+                .setAbsoluteEncoderCANDevice(new CTRECANDevice(10, new CANBus("*")))
                 .setName("Back Left");
             
             public static final SwerveModuleOptions kBackRightOptions = new SwerveModuleOptions()
                 .setDriveMotorID(2)
                 .setTurningMotorID(3)
-                .setAbsoluteEncoderCANDevice(new CTRECANDevice(4, "*"))
+                .setAbsoluteEncoderCANDevice(new CTRECANDevice(4, new CANBus("*")))
                 .setName("Back Right");
             
         }

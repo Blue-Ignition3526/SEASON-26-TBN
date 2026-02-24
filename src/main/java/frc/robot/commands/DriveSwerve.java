@@ -6,13 +6,13 @@ import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import frc.robot.Constants;
 import frc.robot.Constants.SwerveDriveConstants;
-import frc.robot.subsystems.SwerveDrive.SwerveDrive;
+import frc.robot.subsystems.SwerveChassis.SwerveChassis;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj2.command.Command;
 
 public class DriveSwerve extends Command {
   //* The swerve drive subsystem
-  private final SwerveDrive swerveDrive;
+  private final SwerveChassis swerveDrive;
 
   //* The suppliers for the joystick values
   private final Supplier<Double> xSpeed;
@@ -49,7 +49,7 @@ public class DriveSwerve extends Command {
     return input;
   }
 
-  public DriveSwerve(SwerveDrive swerveDrive, Supplier<Double> x, Supplier<Double> y, Supplier<Double> rot, Supplier<Boolean> fieldRelative) {
+  public DriveSwerve(SwerveChassis swerveDrive, Supplier<Double> x, Supplier<Double> y, Supplier<Double> rot, Supplier<Boolean> fieldRelative) {
     this.swerveDrive = swerveDrive;
     this.xSpeed = x;
     this.ySpeed = y;
