@@ -21,6 +21,7 @@ import frc.robot.subsystems.Gyro.Gyro;
 import frc.robot.subsystems.Gyro.GyroIOPigeon;
 import frc.robot.subsystems.Hopper.Hopper;
 import frc.robot.subsystems.Indexer.Indexer;
+import frc.robot.subsystems.Intake.Intake;
 import frc.robot.subsystems.SwerveChassis.SwerveChassis;
 import frc.robot.subsystems.SwerveChassis.SwerveChassisIOReal;
 import frc.robot.subsystems.SwerveChassis.SwerveChassisIOSim;
@@ -44,6 +45,7 @@ public class RobotContainer {
 
   private final Indexer indexer;
   private final Hopper hopper;
+  private final Intake intake;
 
   // * Odometry and Vision
   // private final LimelightOdometryCamera m_limelight3G_Back;
@@ -74,6 +76,7 @@ public class RobotContainer {
 
     this.indexer = new Indexer();
     this.hopper = new Hopper();
+    this.intake = new Intake();
 
     // ! Odometry and Vision
     // this.m_limelight3G_Back = new LimelightOdometryCamera(Constants.Vision.Limelight3G_Back.kName, true, true, VisionOdometryFilters::visionFilter);
