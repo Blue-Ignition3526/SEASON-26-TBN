@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import frc.robot.Constants.SwerveDriveConstants;
 import frc.robot.autos.Autos;
 import frc.robot.commands.CompoundCommands;
@@ -25,6 +26,7 @@ import frc.robot.subsystems.Gyro.GyroIOPigeon;
 import frc.robot.subsystems.Hopper.Hopper;
 import frc.robot.subsystems.Indexer.Indexer;
 import frc.robot.subsystems.Shooter.Shooter;
+import frc.robot.subsystems.Shooter.ShooterConstants;
 import frc.robot.subsystems.SwerveChassis.SwerveChassis;
 import frc.robot.subsystems.SwerveChassis.SwerveChassisIOReal;
 import frc.robot.subsystems.SwerveChassis.SwerveChassisIOSim;
@@ -166,7 +168,7 @@ public class RobotContainer {
         () -> -DRIVER.getLeftY(),
         () -> -DRIVER.getLeftX(),
         () -> DRIVER.getLeftTrigger() - DRIVER.getRightTrigger(),
-        () -> !DRIVER.bottomButton().getAsBoolean()
+        () -> !DRIVER.rightBumper().getAsBoolean()
       )
     );
 
@@ -174,11 +176,28 @@ public class RobotContainer {
     //TODO: think of a better button to bind this to
     this.DRIVER.rightStickButton().onTrue(this.m_swerveChassis.zeroHeadingCommand());
 
-    DRIVER.rightButton().onTrue(m_swerveChassis.enableSpeedAlteratorCommand(lookTowards)).onFalse(m_swerveChassis.disableSpeedAlteratorCommand());
-    DRIVER.leftButton().onTrue(CompoundCommands.completeShootCommand(shooter, indexer, hopper, m_swerveChassis));
+    DRIVER.leftBumper().onTrue(m_swerveChassis.enableSpeedAlteratorCommand(lookTowards)).onFalse(m_swerveChassis.disableSpeedAlteratorCommand());
+    DRIVER.rightButton().onTrue(CompoundCommands.completeShootCommand(shooter, indexer, hopper, m_swerveChassis));
+    DRIVER.bottomButton().onTrue(new ParallelCommandGroup(
+      // intake.intakeCommand(),
+      // intakePivot.setDown()
+    ));
+    // DRIVER.topButton().onTrue(intake.outakeCommand());
 
     // Self Destruct Command
     DRIVER.startButton().onTrue(Commands.runOnce(orchestra::play).ignoringDisable(true));
+
+    // ! OPERATOR
+    // OPERATOR.topButton().onTrue(CompoundCommands.manualShootCommand(shooter, indexer, hopper, ShooterConstants.manual1));
+    // OPERATOR.rightButton().onTrue(CompoundCommands.manualShootCommand(shooter, indexer, hopper, ShooterConstants.manual2));
+    // OPERATOR.leftButton().onTrue(CompoundCommands.manualShootCommand(shooter, indexer, hopper, ShooterConstants.manual3));
+    // OPERATOR.bottomButton().onTrue(CompoundCommands.manualShootCommand(shooter, indexer, hopper, ShooterConstants.manual4));
+
+    
+    // OPERATOR.topButton().onTrue(intakePivot.setPositionCommand(IntakeConstants.manual1));
+    // OPERATOR.rightButton().onTrue(intakePivot.setPositionCommand(IntakeConstants.manual2));
+    // OPERATOR.leftButton().onTrue(intakePivot.setPositionCommand(IntakeConstants.manual3));
+    // OPERATOR.bottomButton().onTrue(intakePivot.setPositionCommand(IntakeConstants.manual4));
   }
 
   public Command getAutonomousCommand() {
