@@ -70,7 +70,7 @@ public class Indexer extends SubsystemBase {
     return runOnce(this::stop);
   }
 
-  public Command conditionalIntake(BooleanSupplier condition) {
+  public Command conditionalIndex(BooleanSupplier condition) {
     return runEnd(() -> {
       if(condition.getAsBoolean()) {
         index();

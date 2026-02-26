@@ -1,5 +1,6 @@
 package frc.robot.subsystems.Shooter;
 
+import com.ctre.phoenix6.Orchestra;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -162,6 +163,11 @@ public class Shooter extends SubsystemBase {
 
   public Command stopCommand() {
     return runOnce(this::stop);
+  }
+
+  public void configureOrchestra(Orchestra orchestra) {
+    orchestra.addInstrument(leftMotor);
+    orchestra.addInstrument(s_rightMotor);
   }
 
   @Override

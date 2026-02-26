@@ -12,7 +12,7 @@ public class CompoundCommands {
     return
       shooter.shootCommand()
       .alongWith(hopper.hopperationCommand())
-      .alongWith(indexer.conditionalIntake(shooter::ready))
+      .alongWith(indexer.conditionalIndex(shooter::ready))
       .alongWith(Commands.runOnce(swerve::xFormation, swerve));
   }
 }

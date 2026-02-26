@@ -17,6 +17,8 @@ import static edu.wpi.first.units.Units.MetersPerSecond;
 import static frc.robot.Constants.SwerveDriveConstants.PoseControllers.*;
 import org.littletonrobotics.junction.Logger;
 
+import com.ctre.phoenix6.Orchestra;
+
 import choreo.trajectory.SwerveSample;
 
 public class SwerveChassisIOReal implements SwerveChassisIO {
@@ -251,6 +253,13 @@ public class SwerveChassisIOReal implements SwerveChassisIO {
         this.frontRight.resetDriveEncoder();
         this.backLeft.resetDriveEncoder();
         this.backRight.resetDriveEncoder();
+    }
+
+    public void configureOrchestra(Orchestra orchestra) {
+        frontLeft.configureOrchestra(orchestra);
+        frontRight.configureOrchestra(orchestra);
+        backLeft.configureOrchestra(orchestra);
+        backRight.configureOrchestra(orchestra);
     }
     
     @Override

@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.CANBus;
+import com.ctre.phoenix6.Orchestra;
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
@@ -82,7 +84,7 @@ public class SwerveModule extends SubsystemBase {
         this.options = options;
 
         // * Create Drive motor and configure it
-        this.driveMotor = new TalonFX(options.driveMotorID, "*");
+        this.driveMotor = new TalonFX(options.driveMotorID, new CANBus("*"));
         this.driveConfig = new TalonFXConfiguration();
         this.driveConfig
             .withCurrentLimits(
@@ -343,6 +345,10 @@ public class SwerveModule extends SubsystemBase {
             this.driveMotor.getPosition().getValueAsDouble() * 3 * Constants.SwerveDriveConstants.PhysicalModel.kDriveEncoder_RotationToMeter,
             Rotation2d.fromRotations(this.getAngle().in(Rotations))
         );
+    }
+
+    public void configureOrchestra(Orchestra orchestra) {
+        orchestra.addInstrument(driveMotor);
     }
 
     public void periodic() {
