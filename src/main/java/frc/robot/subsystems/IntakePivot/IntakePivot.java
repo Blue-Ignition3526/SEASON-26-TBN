@@ -64,7 +64,6 @@ public class IntakePivot extends SubsystemBase {
 
   public void setSetpoint(Angle angle) {
     if (angle.in(Rotations) > kMinAngle.in(Rotations) || angle.in(Rotations) < kMaxAngle.in(Rotations)) {
-      
       // In bounds
       this.enabled = true;
       this.setpoint = angle;
@@ -78,6 +77,14 @@ public class IntakePivot extends SubsystemBase {
 
   public Command setSetpointCommand(Angle setpoint) {
     return runOnce(() -> this.setSetpoint(setpoint));
+  }
+
+  public Command setUpCommand() {
+    return runOnce(() -> this.setSetpoint(kPosUp));
+  }
+
+  public Command setDownCommand() {
+    return runOnce(() -> this.setSetpoint(kPosDown));
   }
 
   public Command stopCommand() {

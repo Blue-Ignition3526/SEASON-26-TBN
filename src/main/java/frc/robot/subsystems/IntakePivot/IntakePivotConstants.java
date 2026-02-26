@@ -13,14 +13,20 @@ public class IntakePivotConstants {
     public static final double kConversionFactor = 1/25;
 
     // ! Values not set
+    // Limits
     public static final Angle kMinAngle = Degrees.of(0);
     public static final Angle kMaxAngle = Degrees.of(0);
+
+    // Positions
+    public static final Angle kPosDown = Degrees.of(0);
+    public static final Angle kPosUp = Degrees.of(0);
 
     public static final Angle kManualPos0 = Degrees.of(0);
     public static final Angle kManualPos1 = Degrees.of(0);
     public static final Angle kManualPos2 = Degrees.of(0);
     public static final Angle kManualPos3 = Degrees.of(0);
 
+    // PID
     public static final PIDController kPID = new PIDController(0, 0, 0);
     public static final Angle kEpsilon = Degrees.of(1);
     public static final double kLimit = 0;
