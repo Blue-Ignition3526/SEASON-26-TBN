@@ -8,4 +8,8 @@ public class BlueMathUtils {
     public static double lerp(double a, double b, double t) {
         return (1-t)*a + t*b;
     }
+
+    public static double clamp(double value, double min, double max) {
+        return Math.max(Math.min(value, max), min);
+    }
 }
