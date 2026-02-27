@@ -137,14 +137,7 @@ public class RobotContainer {
     );
 
     // Build auto chooser
-    this.m_autonomousChooser = new SendableChooser<Command>();
-
-    try {
-      m_autonomousChooser.addOption("TestAuto", Autos.testAuto());
-    } catch (Exception e) {
-      DriverStation.reportError("Error building autos", e.getStackTrace());
-      Elastic.sendNotification(new Notification(NotificationLevel.ERROR, "Error building autos", e.getMessage()));
-    }
+    this.m_autonomousChooser = AutoBuilder.buildAutoChooser();
 
     SmartDashboard.putData("AutoChooser", m_autonomousChooser);
 
