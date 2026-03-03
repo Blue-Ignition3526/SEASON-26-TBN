@@ -6,8 +6,8 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.units.measure.Angle;
 
 public class IntakePivotConstants {
-    public static final int kMotorId = -1;
-    public static final int kEncoderId = -1;
+    public static final int kMotorId = 51;
+    public static final int kEncoderId = 52;
 
     public static final int kCurrentLimit = 40;
 
