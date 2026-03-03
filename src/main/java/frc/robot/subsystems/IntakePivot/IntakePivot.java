@@ -6,6 +6,7 @@ package frc.robot.subsystems.IntakePivot;
 
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.ctre.phoenix6.hardware.CANcoder;
 import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkFlex;
@@ -26,6 +27,7 @@ import org.littletonrobotics.junction.Logger;
 
 public class IntakePivot extends SubsystemBase {
   private final SparkFlex motor;
+  private final CANcoder encoder;
 
   private Angle setpoint;
   private boolean enabled = true;
@@ -35,6 +37,7 @@ public class IntakePivot extends SubsystemBase {
 
   public IntakePivot() {
     this.motor = new SparkFlex(kMotorId, MotorType.kBrushless);
+    this.encoder = new CANcoder(kEncoderId);
 
     SparkFlexConfig config = new SparkFlexConfig();
     config
@@ -49,8 +52,7 @@ public class IntakePivot extends SubsystemBase {
   }
 
   public Angle getAngle() {
-    // ? Should Absolute Encoder be used?
-    return Rotations.of(motor.getAbsoluteEncoder().getPosition());
+    return encoder.getPosition().getValue();
   }
 
   private void set(double voltage) {
@@ -65,6 +67,7 @@ public class IntakePivot extends SubsystemBase {
   public void setSetpoint(Angle angle) {
     if (angle.in(Rotations) > kMinAngle.in(Rotations) || angle.in(Rotations) < kMaxAngle.in(Rotations)) {
       // In bounds
+      if (!enabled) kPID.reset();
       this.enabled = true;
       this.setpoint = angle;
     }
