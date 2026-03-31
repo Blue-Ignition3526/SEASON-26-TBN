@@ -3,8 +3,10 @@ package frc.robot.subsystems.Hopper;
 import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkFlex;
+import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkFlexConfig;
+import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.wpilibj2.command.Command;
@@ -13,34 +15,66 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import static frc.robot.subsystems.Hopper.HopperConstants.*;
 
 public class Hopper extends SubsystemBase {
-  private final SparkFlex motor;
+  private final SparkFlex hopperMotor;
+  // private final SparkMax upperMotor;
 
   public Hopper() {
-    this.motor = new SparkFlex(kMotorID, MotorType.kBrushless);
+    this.hopperMotor = new SparkFlex(kHopperMotorID, MotorType.kBrushless);
+    // // this.upperMotor = new SparkMax(kUpperMotorID, MotorType.kBrushless);
 
-    SparkFlexConfig config = new SparkFlexConfig();
+    SparkFlexConfig hopperConfig = new SparkFlexConfig();
+    SparkMaxConfig upperConfig = new SparkMaxConfig();
 
-    config
+    hopperConfig
+      .smartCurrentLimit(kCurrentLimit)
+      .idleMode(IdleMode.kBrake)
+      .inverted(false);
+    
+    upperConfig
       .smartCurrentLimit(kCurrentLimit)
       .idleMode(IdleMode.kBrake)
       .inverted(false);
 
-    motor.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+    hopperMotor.configure(hopperConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+    // upperMotor.configure(upperConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
   }
 
-  public void set(double voltage) {
-    motor.setVoltage(voltage);
+  public void hopperSet(double voltage) {
+    hopperMotor.setVoltage(voltage);
+  }
+
+  public void upperSet(double voltage) {
+    // upperMotor.setVoltage(voltage);
   }
 
   public void hopperate() {
-    set(hopperationVoltage);
+    hopperSet(kHopperationVoltage);
+    upperSet(kUpperationVoltage);
+  }
+
+  public void reverse() {
+    hopperSet(-kHopperationVoltage);
+    upperSet(-kUpperationVoltage);
   }
 
   public void stop() {
-    motor.stopMotor();
+    hopperMotor.stopMotor();
+    // upperMotor.stopMotor();
+  }
+
+  public Command stopCommand() {
+    return runOnce(this::stop);
   }
 
   public Command hopperationCommand() {
     return runEnd(this::hopperate, this::stop);
+  }
+
+  public Command hopperationCommandForAuto() {
+    return run(this::hopperate);
+  }
+
+  public Command reverseCommand() {
+    return runEnd(this::reverse, this::stop);
   }
 }

@@ -21,6 +21,7 @@ public interface SwerveChassisIO {
 
     public void drive(ChassisSpeeds speeds);
 
+    public default void setDefaultAlterator(SpeedAlterator alterator) {}
     public void enableSpeedAlterator(SpeedAlterator alterator);
     public void disableSpeedAlterator();
 

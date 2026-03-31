@@ -16,6 +16,7 @@ public class ByHeading extends SpeedAlterator {
         this.angleSupplier = angleSupplier;
         this.targetAngle = targetAngle;
         SmartDashboard.putBoolean("Alterators/Look", false);
+        Constants.SwerveDriveConstants.PoseControllers.rotationPID.enableContinuousInput(-Math.PI, Math.PI);
     }
     
     @Override
@@ -29,9 +30,9 @@ public class ByHeading extends SpeedAlterator {
     }
 
     public ChassisSpeeds alterSpeed(ChassisSpeeds speeds, boolean robotRelative) {
-        double rotSpeed = -Constants.SwerveDriveConstants.PoseControllers.rotationPID.calculate(angleSupplier.get() % 1, targetAngle.get() % 1);
-        SmartDashboard.putNumber("Alterators/DesiredAngle", targetAngle.get() % 1);
-        SmartDashboard.putNumber("Alterators/CurrentAngle", angleSupplier.get() % 1);
+        double rotSpeed = Constants.SwerveDriveConstants.PoseControllers.rotationPID.calculate(angleSupplier.get(), targetAngle.get());
+        SmartDashboard.putNumber("Alterators/DesiredAngle", targetAngle.get());
+        SmartDashboard.putNumber("Alterators/CurrentAngle", angleSupplier.get());
         SmartDashboard.putNumber("Alterators/Speed", rotSpeed);
 
         speeds.omegaRadiansPerSecond = rotSpeed;

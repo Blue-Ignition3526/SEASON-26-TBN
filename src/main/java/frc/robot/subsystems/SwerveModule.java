@@ -222,7 +222,7 @@ public class SwerveModule extends SubsystemBase {
         double turnEncErr = MathUtil.inputModulus(getAngle().in(Degrees), 0, 360) - getAbsoluteEncoderPosition().in(Degrees);
         if (Math.abs(turnEncErr) > 5) {
             alert_turnEncodersOutOfSync.set(true);
-            DriverStation.reportError(options.name +  " turning encoders are out of sync (" + String.valueOf(turnEncErr) + "°)", false);
+            DriverStation.reportWarning(options.name +  " turning encoders are out of sync (" + String.valueOf(turnEncErr) + "°)", false);
             resetTurningEncoder();
         } else {
             alert_turnEncodersOutOfSync.set(false);
@@ -286,7 +286,7 @@ public class SwerveModule extends SubsystemBase {
      * @param force If true, the module will ignore the current speed and turn to the target angle
      */
     public void setTargetState(SwerveModuleState state, boolean force) {
-        if (Math.abs(state.speedMetersPerSecond) < Double.MIN_VALUE || force) {
+        if (Math.abs(state.speedMetersPerSecond) < Double.MIN_VALUE && !force) {
             stop();
             return;
         }

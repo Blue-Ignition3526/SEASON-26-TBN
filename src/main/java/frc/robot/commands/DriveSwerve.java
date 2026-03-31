@@ -72,15 +72,15 @@ public class DriveSwerve extends Command {
     double rot = rotSpeed.get();
 
     // Apply deadzone to the joystick values
-    if(Math.hypot(x, y) > Constants.SwerveDriveConstants.kJoystickDeadband) {
-      //x = (x + ((x > 0 ? -1 : 1) * Constants.SwerveDriveConstants.kJoystickDeadband)) * 1 / ( 1 - Constants.SwerveDriveConstants.kJoystickDeadband);
-      //y = (y + ((y > 0 ? -1 : 1) * Constants.SwerveDriveConstants.kJoystickDeadband)) * 1 / ( 1 - Constants.SwerveDriveConstants.kJoystickDeadband);
-    } else {
-      x = 0;
-      y = 0;
-    }
+    // if(Math.hypot(x, y) > Constants.SwerveDriveConstants.kJoystickDeadband) {
+    //   //x = (x + ((x > 0 ? -1 : 1) * Constants.SwerveDriveConstants.kJoystickDeadband)) * 1 / ( 1 - Constants.SwerveDriveConstants.kJoystickDeadband);
+    //   //y = (y + ((y > 0 ? -1 : 1) * Constants.SwerveDriveConstants.kJoystickDeadband)) * 1 / ( 1 - Constants.SwerveDriveConstants.kJoystickDeadband);
+    // } else {
+    //   x = 0;
+    //   y = 0;
+    // }
     
-    rot = Math.abs(rot) < Constants.SwerveDriveConstants.kJoystickDeadband ? 0 : rot;
+    // rot = Math.abs(rot) < Constants.SwerveDriveConstants.kJoystickDeadband ? 0 : rot;
 
     // Modify the axis
     x = modifyAxis(x, Constants.SwerveDriveConstants.PhysicalModel.kMaxSpeed.in(MetersPerSecond), SwerveDriveConstants.PhysicalModel.xLimiter);

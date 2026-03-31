@@ -1,5 +1,6 @@
 package frc.robot;
 
+import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.net.PortForwarder;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
@@ -48,13 +49,13 @@ public class Robot extends LoggedRobot {
     SignalLogger.enableAutoLogging(false);
     SignalLogger.stop();
 
-    //CameraServer.startAutomaticCapture();
+    CameraServer.startAutomaticCapture();
 
     // * Cameras port forwarding over USB
     for (int port = 5800; port <= 5807; port++) PortForwarder.add(port, Constants.Vision.Limelight3G_Front.kName + ".local", port);
-    for (int port = 5800; port <= 5807; port++) PortForwarder.add(port, Constants.Vision.Limelight3G_Back.kName + ".local", port);
     // for (int port = 5800; port <= 5807; port++) PortForwarder.add(port, Constants.Vision.LimelightTwoPlus.kName + ".local", port);
     for (int port = 5800; port <= 5807; port++) PortForwarder.add(port, "photonvision", port);
+    PortForwarder.add(1181, "cam", 1181); 
 
     // * DataLogManager
     //try {

@@ -25,7 +25,7 @@ public class Intake extends SubsystemBase {
     SparkFlexConfig config = new SparkFlexConfig();
     config
       .smartCurrentLimit(kCurrentLimit)
-      .idleMode(IdleMode.kBrake)
+      .idleMode(IdleMode.kCoast)
       .inverted(false);
 
     this.motor.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
@@ -41,7 +41,7 @@ public class Intake extends SubsystemBase {
   }
 
   public void setOut() {
-    set(-kOutVoltage);
+    set(kOutVoltage);
   }
 
   public void stop() {
@@ -50,11 +50,15 @@ public class Intake extends SubsystemBase {
 
   // Commands
   public Command setInCommand() {
-    return runOnce(this::setIn);
+    return runEnd(this::setIn, this::stop);
+  }
+
+  public Command setInCommandForAuto() {
+    return run(this::setIn);
   }
 
   public Command setOutCommand() {
-    return runOnce(this::setOut);
+    return runEnd(this::setOut, this::stop);
   }
 
   public Command stopCommand() {

@@ -54,8 +54,8 @@ public class GyroIOPigeon implements GyroIO {
         return gyro.getRotation2d();
     }
     
-    public void reset() {
-        gyro.reset();
+    public void reset(Rotation2d newHeading) {
+        gyro.setYaw(newHeading.getMeasure());
     }
 
     public double getVelocityX() {

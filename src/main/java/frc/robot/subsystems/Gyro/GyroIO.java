@@ -1,11 +1,11 @@
 package frc.robot.subsystems.Gyro;
 
-// import org.littletonrobotics.junction.AutoLog;
+import org.littletonrobotics.junction.AutoLog;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 
 public interface GyroIO {
-    // @AutoLog
+    @AutoLog
     class GyroIOInputs {
         double pitch;
         double yaw;
@@ -42,7 +42,10 @@ public interface GyroIO {
 
     Rotation2d getHeading();
 
-    void reset();
+    void reset(Rotation2d newHeading);
+    default void reset() {
+        reset(Rotation2d.kZero);
+    }
 
     default void updateInputs(GyroIOInputs inputs) {};
 

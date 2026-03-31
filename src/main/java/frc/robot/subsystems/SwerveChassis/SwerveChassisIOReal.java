@@ -3,13 +3,14 @@ package frc.robot.subsystems.SwerveChassis;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import frc.robot.Constants;
+import frc.robot.Constants.SwerveDriveConstants.PhysicalModel;
+import frc.robot.speedAlterators.Nothing;
 import frc.robot.subsystems.SwerveModule;
 import frc.robot.subsystems.Gyro.Gyro;
 import lib.BlueShift.control.SpeedAlterator;
@@ -18,8 +19,6 @@ import static frc.robot.Constants.SwerveDriveConstants.PoseControllers.*;
 import org.littletonrobotics.junction.Logger;
 
 import com.ctre.phoenix6.Orchestra;
-
-import choreo.trajectory.SwerveSample;
 
 public class SwerveChassisIOReal implements SwerveChassisIO {
     // * Swerve modules
@@ -36,7 +35,8 @@ public class SwerveChassisIOReal implements SwerveChassisIO {
     private ChassisSpeeds speeds = new ChassisSpeeds();
 
     // * Speed alterator
-    private SpeedAlterator speedAlterator = null;
+    private SpeedAlterator defaultAlterator = new Nothing();
+    private SpeedAlterator speedAlterator = new Nothing();
 
     /**
      * Create a new Swerve drivetrain with the provided Swerve Modules and gyroscope
@@ -148,19 +148,33 @@ public class SwerveChassisIOReal implements SwerveChassisIO {
      * @param rotSpeed
      */
     public void drive(ChassisSpeeds speeds) {
-        Logger.recordOutput("SwerveDrive/SpeedsAltered", speeds);
+        Logger.recordOutput("SwerveDrive/SpeedsUnaltered", speeds);
+        Logger.recordOutput("SwerveDrive/hasAlterator", speedAlterator != null);
+        this.speeds = speeds;
         if (speedAlterator != null) {
             this.speeds = speedAlterator.alterSpeed(speeds, drivingRobotRelative);
         } else {
             this.speeds = speeds;
         }
-        Logger.recordOutput("SwerveDrive/SpeedsUnaltered", speeds);
+
+        if(Math.abs(this.speeds.vxMetersPerSecond) <= 0.1 && Math.abs(this.speeds.vyMetersPerSecond) <= 0.1 && Math.abs(this.speeds.omegaRadiansPerSecond) <= 0.2) {
+            this.xFormation();
+            return;
+        }
+
+        Logger.recordOutput("SwerveDrive/SpeedsAltered", this.speeds);
 
         // Convert speeds to module states
-        SwerveModuleState[] m_moduleStates = Constants.SwerveDriveConstants.PhysicalModel.kDriveKinematics.toSwerveModuleStates(this.speeds);
+        SwerveModuleState[] m_moduleStates = PhysicalModel.kDriveKinematics.toSwerveModuleStates(this.speeds);
 
         // Set the target states for the modules
         this.setModuleStates(m_moduleStates);
+    }
+
+    @Override
+    public void setDefaultAlterator(SpeedAlterator alterator) {
+        this.defaultAlterator = alterator;
+        enableSpeedAlterator(alterator);
     }
 
     public void enableSpeedAlterator(SpeedAlterator alterator) {
@@ -170,8 +184,11 @@ public class SwerveChassisIOReal implements SwerveChassisIO {
     }
 
     public void disableSpeedAlterator() {
-        if(this.speedAlterator != null) this.speedAlterator.onDisable();
-        this.speedAlterator = null;
+        // if(this.speedAlterator != null) this.speedAlterator.onDisable();
+        // this.speedAlterator = null;
+        if(this.speedAlterator != defaultAlterator) this.speedAlterator.onDisable();
+        this.speedAlterator = defaultAlterator;
+        this.speedAlterator.onEnable();
     }
 
     /**
@@ -229,10 +246,10 @@ public class SwerveChassisIOReal implements SwerveChassisIO {
      * Angle all wheels to point inwards in an X pattern
      */
     public void xFormation() {
-        this.frontLeft.setTargetState(new SwerveModuleState(0, Rotation2d.fromDegrees(-45)), true);
-        this.frontRight.setTargetState(new SwerveModuleState(0, Rotation2d.fromDegrees(45)), true);
-        this.backLeft.setTargetState(new SwerveModuleState(0, Rotation2d.fromDegrees(45)), true);
-        this.backRight.setTargetState(new SwerveModuleState(0, Rotation2d.fromDegrees(-45)), true);
+        this.frontLeft.setTargetState(new SwerveModuleState(0, Rotation2d.fromDegrees(-45-90)), true);
+        this.frontRight.setTargetState(new SwerveModuleState(0, Rotation2d.fromDegrees(45-90)), true);
+        this.backLeft.setTargetState(new SwerveModuleState(0, Rotation2d.fromDegrees(45-90)), true);
+        this.backRight.setTargetState(new SwerveModuleState(0, Rotation2d.fromDegrees(-45-90)), true);
     }
 
     /**

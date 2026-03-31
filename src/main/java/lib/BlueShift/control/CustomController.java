@@ -15,26 +15,24 @@ public class CustomController {
         PS5
     }
 
-    public enum CustomJoystickCurve {
-        LINEAR,
-        CUBIC
-    }
-
     CustomControllerType type;
     int port;
-    int curve;
+    double deadband;
+    double exponent;
+    double triggerExponent;
     PS5Controller ps5Controller;
     PS4Controller ps4Controller;
     XboxController xboxController;
 
     /**
-     * Creates a CustomController instance, lets you specify the controller this.type and the joystick curve
-     * @param ContollerPort The port the controller is plugged into
-     * @param this.type The this.type of controller
-     * @param curve The curve of the joystick
+     * Creates a CustomController instance with deadband and exponent, normalized
+     * @param contollerPort The port the controller is plugged into
+     * @param type The type of controller
+     * @param deadband The deadband of the controller
+     * @param exponent The exponent to be applied to the joystick values.
      */
-    public CustomController(int ContollerPort, CustomControllerType type, CustomJoystickCurve curve) {
-        this.port = ContollerPort;
+    public CustomController(int contollerPort, CustomControllerType type, double deadband, double exponent) {
+        this.port = contollerPort;
         this.type = type;
 
         switch (this.type) {
@@ -51,28 +49,54 @@ public class CustomController {
                 throw new IllegalArgumentException("Invalid Controller Type");
         }
 
-        switch (curve) {
-            case LINEAR:
-                this.curve = 1;
-                break;
-            case CUBIC:
-                this.curve = 3;
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid Joystick Curve");
-        }
+        this.deadband = deadband;
+        this.exponent = exponent;
+        this.triggerExponent = 1;
     }
 
     /**
-     * Creates a CustomController instance, lets you specify the controller this.type
-     * @param ContollerPort The port the controller is plugged into
-     * @param this.type The this.type of controller
+     * Creates a CustomController instance with deadband and exponent, normalized
+     * @param contollerPort The port the controller is plugged into
+     * @param type The type of controller
+     * @param deadband The deadband of the controller
+     * @param exponent The exponent to be applied to the joystick values.
+     * @param triggerExponent The exponent to be applied to the trigger values.
      */
-    public CustomController(int ContollerPort, CustomControllerType type) {
-        this.port = ContollerPort;
+    public CustomController(int contollerPort, CustomControllerType type, double deadband, double exponent, double triggerExponent) {
+        this.port = contollerPort;
         this.type = type;
-        this.curve = 1;
 
+        switch (this.type) {
+            case XBOX:
+                xboxController = new XboxController(this.port);
+                break;
+            case PS4:
+                ps4Controller = new PS4Controller(this.port);
+                break;
+            case PS5:
+                ps5Controller = new PS5Controller(this.port);
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid Controller Type");
+        }
+
+        this.deadband = deadband;
+        this.exponent = exponent;
+        this.triggerExponent = triggerExponent;
+    }
+
+    /**
+     * Creates a CustomController instance
+     * @param contollerPort The port the controller is plugged into
+     * @param type The type of controller
+     */
+    public CustomController(int contollerPort, CustomControllerType type) {
+        this.port = contollerPort;
+        this.type = type;
+        this.deadband = 0;
+        this.exponent = 1;
+        this.triggerExponent = 1;
+        
         switch (this.type) {
             case XBOX:
                 xboxController = new XboxController(port);
@@ -95,11 +119,11 @@ public class CustomController {
     public double getLeftY() {
         switch (this.type) {
             case XBOX:
-                return Math.pow(xboxController.getLeftY(), this.curve)+0.0;
+                return applyJoystickDeadband(xboxController.getLeftY());
             case PS4:
-                return Math.pow(ps4Controller.getLeftY(), this.curve)+0.0;
+                return applyJoystickDeadband(ps4Controller.getLeftY());
             case PS5:
-                return Math.pow(ps5Controller.getLeftY(), this.curve)+0.0;
+                return applyJoystickDeadband(ps5Controller.getLeftY());
             default:
                 throw new IllegalArgumentException("Invalid Controller Type");
         }
@@ -112,11 +136,11 @@ public class CustomController {
     public double getLeftX() {
         switch (this.type) {
             case XBOX:
-                return Math.pow(xboxController.getLeftX(), this.curve)+0.0;
+                return applyJoystickDeadband(xboxController.getLeftX());
             case PS4:
-                return Math.pow(ps4Controller.getLeftX(), this.curve)+0.0;
+                return applyJoystickDeadband(ps4Controller.getLeftX());
             case PS5:
-                return Math.pow(ps5Controller.getLeftX(), this.curve)+0.0;
+                return applyJoystickDeadband(ps5Controller.getLeftX());
             default:
                 throw new IllegalArgumentException("Invalid Controller Type");
         }
@@ -129,11 +153,11 @@ public class CustomController {
     public double getRightX() {
         switch (this.type) {
             case XBOX:
-                return Math.pow(xboxController.getRightX(), this.curve)+0.0;
+                return applyJoystickDeadband(xboxController.getRightX());
             case PS4:
-                return Math.pow(ps4Controller.getRightX(), this.curve)+0.0;
+                return applyJoystickDeadband(ps4Controller.getRightX());
             case PS5:
-                return Math.pow(ps5Controller.getRightX(), this.curve)+0.0;
+                return applyJoystickDeadband(ps5Controller.getRightX());
             default:
                 throw new IllegalArgumentException("Invalid Controller Type");
         }
@@ -146,11 +170,11 @@ public class CustomController {
     public double getRightY() {
         switch (this.type) {
             case XBOX:
-                return Math.pow(xboxController.getRightY(), this.curve)+0.0;
+                return applyJoystickDeadband(xboxController.getRightY());
             case PS4:
-                return Math.pow(ps4Controller.getRightY(), this.curve)+0.0;
+                return applyJoystickDeadband(ps4Controller.getRightY());
             case PS5:
-                return Math.pow(ps5Controller.getRightY(), this.curve)+0.0;
+                return applyJoystickDeadband(ps5Controller.getRightY());
             default:
                 throw new IllegalArgumentException("Invalid Controller Type");
         }
@@ -161,16 +185,23 @@ public class CustomController {
      * @return
      */
     public double getLeftTrigger() {
+        double value = 0;
+
         switch (this.type) {
             case XBOX:
-                return xboxController.getLeftTriggerAxis();
+                value = xboxController.getLeftTriggerAxis();
+                break;
             case PS4:
-                return ps4Controller.getL2Axis();
+                value = (ps4Controller.getL2Axis() + 1) / 2;
+                break;
             case PS5:
-                return ps5Controller.getL2Axis();
+                value = (ps5Controller.getL2Axis() + 1) / 2;
+                break;
             default:
                 throw new IllegalArgumentException("Invalid Controller Type");
         }
+
+        return Math.pow(value, triggerExponent);
     }
 
     /**
@@ -178,16 +209,23 @@ public class CustomController {
      * @return
      */
     public double getRightTrigger() {
+        double value = 0;
+
         switch (this.type) {
             case XBOX:
-                return xboxController.getRightTriggerAxis();
+                value = xboxController.getRightTriggerAxis();
+                break;
             case PS4:
-                return ps4Controller.getR2Axis();
+                value = (ps4Controller.getR2Axis() + 1) / 2;
+                break;
             case PS5:
-                return ps5Controller.getR2Axis();
+                value = (ps5Controller.getR2Axis() + 1) / 2;
+                break;
             default:
                 throw new IllegalArgumentException("Invalid Controller Type");
         }
+
+        return Math.pow(value, triggerExponent);
     }
 
     /**
@@ -682,6 +720,16 @@ public class CustomController {
                 break;
             default:
                 throw new IllegalArgumentException("Invalid Controller Type");
+        }
+    }
+
+    private double applyJoystickDeadband(double value) {
+        if(Math.abs(value) < deadband) {
+            return 0;
+        } else if(value > 0) {
+            return Math.pow((value - deadband) / (1-deadband), exponent);
+        } else {
+            return -Math.pow((Math.abs(value + deadband)) / (1-deadband), exponent);
         }
     }
 }

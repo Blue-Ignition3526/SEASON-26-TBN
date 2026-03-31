@@ -4,10 +4,8 @@ import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
-import com.revrobotics.spark.config.SparkMaxConfig;
 
 import static frc.robot.subsystems.Indexer.IndexerConstants.*;
 
@@ -17,45 +15,33 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Indexer extends SubsystemBase {
-  private final SparkFlex topMotor;
-  private final SparkMax lowerMotor;
+  private final SparkFlex wheelMotor;
 
   public Indexer() {
-    this.topMotor = new SparkFlex(kUpperMotorID, MotorType.kBrushless);
-    this.lowerMotor = new SparkMax(kLowerMotorID, MotorType.kBrushless);
+    this.wheelMotor = new SparkFlex(kWheelMotorID, MotorType.kBrushless);
 
-    SparkFlexConfig upperConfig = new SparkFlexConfig();
-    SparkMaxConfig lowerConfig = new SparkMaxConfig();
+    SparkFlexConfig topConfig = new SparkFlexConfig();
     
-    upperConfig
-            .smartCurrentLimit(kUpperCurrentLimit)
+    topConfig
+            .smartCurrentLimit(kWheelCurrentLimit)
             .idleMode(IdleMode.kBrake)
-            .openLoopRampRate(kUpperRampRate)
+            .openLoopRampRate(kWheelRampRate)
             .inverted(false);
 
-    lowerConfig
-            .smartCurrentLimit(kLowerCurrentLimit)
-            .idleMode(IdleMode.kBrake)
-            .openLoopRampRate(kLowerRampRate)
-            .inverted(true);
 
-    this.topMotor.configure(upperConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
-    this.lowerMotor.configure(lowerConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+    this.wheelMotor.configure(topConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
   }
 
   public void index() {
-    topMotor.setVoltage(kTopIndexVoltage);
-    lowerMotor.setVoltage(kBottomIndexVoltaje);
+    wheelMotor.setVoltage(kTopIndexVoltage);
   }
 
   public void eject() {
-    topMotor.setVoltage(kTopEjectVoltage);
-    lowerMotor.setVoltage(kBottomEjectVoltaje);
+    wheelMotor.setVoltage(kTopEjectVoltage);
   }
 
   public void stop() {
-    topMotor.stopMotor();
-    lowerMotor.stopMotor();
+    wheelMotor.stopMotor();
   }
 
   public Command indexCommand() {
@@ -78,5 +64,15 @@ public class Indexer extends SubsystemBase {
         stop();
       }
     }, this::stop);
+  }
+
+  public Command conditionalIndexForAuto(BooleanSupplier condition) {
+    return run(() -> {
+      if(condition.getAsBoolean()) {
+        index();
+      } else {
+        stop();
+      }
+    });
   }
 }

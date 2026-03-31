@@ -1,0 +1,49 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "INTAKE_DOWN"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "INTAKE_START"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "right-center-short"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AUTOAIM"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "SHOOT"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "STOP_ALTERATORS"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}

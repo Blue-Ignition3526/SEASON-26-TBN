@@ -96,6 +96,10 @@ public class Gyro extends SubsystemBase implements GyroIO {
     return io.getHeading();
   }
 
+  public void reset(Rotation2d newHeading) {
+    io.reset(newHeading);
+  }
+
   /**
    * Resets the gyro.
    */

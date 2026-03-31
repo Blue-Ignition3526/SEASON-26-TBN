@@ -10,7 +10,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import lib.BlueShift.control.SpeedAlterator;
-import frc.robot.subsystems.SwerveChassis.SwerveChassisIOReal;
 
 public class SwerveChassis extends SubsystemBase implements SwerveChassisIO {
   SwerveChassisIO io;
@@ -51,6 +50,11 @@ public class SwerveChassis extends SubsystemBase implements SwerveChassisIO {
 
   public void drive(ChassisSpeeds speeds) {
     io.drive(speeds);
+  }
+
+
+  public void setDefaultAlterator(SpeedAlterator alterator) {
+    io.setDefaultAlterator(alterator);
   }
 
   public void enableSpeedAlterator(SpeedAlterator alterator) {

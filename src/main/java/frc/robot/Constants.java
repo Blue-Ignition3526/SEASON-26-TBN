@@ -61,7 +61,7 @@ public class Constants {
         //* Gyroscope (Pigeon 2.0)
         public static final CTRECANDevice kGyroDevice = new CTRECANDevice(34, new CANBus("*"));
 
-        public static final double kJoystickDeadband = 0.09;
+        // public static final double kJoystickDeadband = 0.09;
         //* Physical model of the robot
         public static final class PhysicalModel {
             //* MAX DISPLACEMENT SPEED (and acceleration)
@@ -95,8 +95,8 @@ public class Constants {
             public static final double kTurningEncoder_RPS = kTurningEncoder_Rotation / 60.0;
 
             // Robot Without bumpers measures
-            public static final Distance kTrackWidth = Inches.of(24);
-            public static final Distance kWheelBase = Inches.of(24);
+            public static final Distance kTrackWidth = Inches.of(23);
+            public static final Distance kWheelBase = Inches.of(23);
     
             // Create a kinematics instance with the positions of the swerve modules
             public static final SwerveDriveKinematics kDriveKinematics = new SwerveDriveKinematics(SwerveChassis.sizeToModulePositions(kTrackWidth.in(Meters), kWheelBase.in(Meters)));

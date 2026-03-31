@@ -2,10 +2,12 @@ package frc.robot;
 
 import com.ctre.phoenix6.Orchestra;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.util.DriveFeedforwards;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -14,12 +16,14 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import frc.robot.Constants.SwerveDriveConstants;
-import frc.robot.autos.Autos;
 import frc.robot.commands.CompoundCommands;
 import frc.robot.commands.DriveSwerve;
+import frc.robot.commands.ResetHeadingWithVision;
+import frc.robot.speedAlterators.ByHeading;
+import frc.robot.speedAlterators.KeepHeading;
 import frc.robot.speedAlterators.LookToward;
+import frc.robot.speedAlterators.Shake;
 import frc.robot.subsystems.SwerveModule;
 import frc.robot.subsystems.Gyro.Gyro;
 import frc.robot.subsystems.Gyro.GyroIOPigeon;
@@ -27,27 +31,29 @@ import frc.robot.subsystems.Hopper.Hopper;
 import frc.robot.subsystems.Indexer.Indexer;
 import frc.robot.subsystems.Intake.Intake;
 import frc.robot.subsystems.IntakePivot.IntakePivot;
+import frc.robot.subsystems.Shooter.ShooterIOMagic;
 import frc.robot.subsystems.Shooter.Shooter;
 import frc.robot.subsystems.Shooter.ShooterConstants;
+import frc.robot.subsystems.Shooter.TrajectoryGetter;
 import frc.robot.subsystems.SwerveChassis.SwerveChassis;
 import frc.robot.subsystems.SwerveChassis.SwerveChassisIOReal;
-import frc.robot.subsystems.SwerveChassis.SwerveChassisIOSim;
 import lib.Elastic;
 import lib.Elastic.Notification;
 import lib.Elastic.Notification.NotificationLevel;
 import lib.BlueShift.control.CustomController;
-import lib.BlueShift.control.SpeedAlterator;
 import lib.BlueShift.control.CustomController.CustomControllerType;
+import lib.BlueShift.math.BlueMathUtils;
 import lib.BlueShift.odometry.swerve.BlueShiftOdometry;
 import lib.BlueShift.odometry.vision.camera.LimelightOdometryCamera;
 import lib.BlueShift.odometry.vision.camera.VisionOdometryFilters;
 
 public class RobotContainer {
-  // * Controllers
-  private final CustomController DRIVER = new CustomController(0, Robot.isReal() ? CustomControllerType.XBOX : CustomControllerType.PS5);
-  private final CustomController OPERATOR = new CustomController(1, CustomControllerType.XBOX);
+  // * Controller
+  private final CustomController DRIVER = new CustomController(0, CustomControllerType.PS5, 0.09, 1.5, 2.0);
+  private final CustomController OPERATOR = new CustomController(1, CustomControllerType.PS5);
 
   // Swerve Drive
+  private final Gyro m_gyro;
   private final SwerveChassis m_swerveChassis;
 
   private final Indexer indexer;
@@ -62,7 +68,10 @@ public class RobotContainer {
   private final BlueShiftOdometry m_odometry;
   private final double m_visionPeriod = 0.02;
 
-  private final SpeedAlterator lookTowards;
+  private final LookToward lookTowards;
+  private final Shake shake;
+  private final ByHeading trenchPass;
+  private final KeepHeading keepHeading;
 
   private final Orchestra orchestra;
 
@@ -73,17 +82,14 @@ public class RobotContainer {
   public RobotContainer() {
     //! Subsystems
     // * Swerve Drive
-    if (Robot.isReal()) {
-      this.m_swerveChassis = new SwerveChassis(new SwerveChassisIOReal(
-        new SwerveModule(Constants.SwerveDriveConstants.SwerveModuleConstants.kFrontLeftOptions),
-        new SwerveModule(Constants.SwerveDriveConstants.SwerveModuleConstants.kFrontRightOptions),
-        new SwerveModule(Constants.SwerveDriveConstants.SwerveModuleConstants.kBackLeftOptions),
-        new SwerveModule(Constants.SwerveDriveConstants.SwerveModuleConstants.kBackRightOptions),
-        new Gyro(new GyroIOPigeon(Constants.SwerveDriveConstants.kGyroDevice))
-      ));
-    } else {
-      this.m_swerveChassis = new SwerveChassis(new SwerveChassisIOSim());
-    }
+    this.m_gyro = new Gyro(new GyroIOPigeon(Constants.SwerveDriveConstants.kGyroDevice));
+    this.m_swerveChassis = new SwerveChassis(new SwerveChassisIOReal(
+      new SwerveModule(Constants.SwerveDriveConstants.SwerveModuleConstants.kFrontLeftOptions),
+      new SwerveModule(Constants.SwerveDriveConstants.SwerveModuleConstants.kFrontRightOptions),
+      new SwerveModule(Constants.SwerveDriveConstants.SwerveModuleConstants.kBackLeftOptions),
+      new SwerveModule(Constants.SwerveDriveConstants.SwerveModuleConstants.kBackRightOptions),
+      m_gyro
+    ));
 
     this.indexer = new Indexer();
     this.hopper = new Hopper();
@@ -105,7 +111,22 @@ public class RobotContainer {
     this.m_limelight3G_Front.enable();
     this.m_odometry.startVision();
 
-    this.shooter = new Shooter(m_odometry::getEstimatedPosition);
+    this.shooter = new Shooter(new ShooterIOMagic(m_odometry::getEstimatedPosition));
+
+    this.lookTowards = new LookToward(m_odometry::getEstimatedPosition, TrajectoryGetter.hubPos());
+    this.shake = new Shake(Rotation2d.fromDegrees(1), m_swerveChassis::getHeading);
+    this.trenchPass = new ByHeading(() -> m_swerveChassis.getHeading().getRadians(), () -> BlueMathUtils.optimize(m_gyro.getHeading(), Rotation2d.kZero).getRadians());
+    this.keepHeading = new KeepHeading(m_odometry::getEstimatedPosition, 0.05);
+
+    this.m_swerveChassis.setDefaultAlterator(keepHeading);
+
+    NamedCommands.registerCommand("SHOOT", CompoundCommands.autoShootCommand(shooter, m_odometry::getEstimatedPosition, indexer, hopper, intake, intakePivot, m_swerveChassis));
+    NamedCommands.registerCommand("INTAKE_DOWN", intakePivot.setDownCommand());
+    NamedCommands.registerCommand("INTAKE_UP", intakePivot.setUpCommand());
+    NamedCommands.registerCommand("INTAKE_START", intake.runOnce(intake::setIn));
+    NamedCommands.registerCommand("INTAKE_STOP", intake.stopCommand());
+    NamedCommands.registerCommand("AUTOAIM", m_swerveChassis.enableSpeedAlteratorCommand(lookTowards));
+    NamedCommands.registerCommand("STOP_ALTERATORS", m_swerveChassis.disableSpeedAlteratorCommand());
 
     // ! Speed alterators
     // this.m_speedAlterator_turn180 = new Turn180(m_odometry::getEstimatedPosition);
@@ -137,29 +158,18 @@ public class RobotContainer {
     );
 
     // Build auto chooser
-    this.m_autonomousChooser = new SendableChooser<Command>();
+    this.m_autonomousChooser = AutoBuilder.buildAutoChooser();
 
-    try {
-      m_autonomousChooser.addOption("TestAuto", Autos.testAuto());
-    } catch (Exception e) {
-      DriverStation.reportError("Error building autos", e.getStackTrace());
-      Elastic.sendNotification(new Notification(NotificationLevel.ERROR, "Error building autos", e.getMessage()));
-    }
-
-    SmartDashboard.putData("AutoChooser", m_autonomousChooser);
-
-    this.lookTowards = new LookToward(m_odometry::getEstimatedPosition, FieldConstants.kHubPosition);
-    
+    SmartDashboard.putData("AutoChooser", m_autonomousChooser);    
     // ! Dashboard testing commands
     // Chassis
     SmartDashboard.putData("SwerveDrive/ResetTurningEncoders", new InstantCommand(m_swerveChassis::resetTurningEncoders).ignoringDisable(true));
+    SmartDashboard.putData("SwerveDrive/ResetHeadingWithVision", new ResetHeadingWithVision(m_gyro, Constants.Vision.Limelight3G_Front.kName));
 
     this.orchestra = new Orchestra();
-    
+
     shooter.configureOrchestra(orchestra);
     m_swerveChassis.configureOrchestra(orchestra);
-
-    orchestra.loadMusic("filepath");
 
     // ! Add controller bindings
     configureBindings();
@@ -173,40 +183,72 @@ public class RobotContainer {
         m_swerveChassis,
         () -> -DRIVER.getLeftY(),
         () -> -DRIVER.getLeftX(),
-        () -> DRIVER.getLeftTrigger() - DRIVER.getRightTrigger(),
-        () -> !DRIVER.rightBumper().getAsBoolean()
+        () ->  (DRIVER.getLeftTrigger() - DRIVER.getRightTrigger()),
+        () -> true // /!DRIVER.rightBumper().getAsBoolean()
       )
     );
 
+    this.indexer.setDefaultCommand(indexer.ejectCommand());
+    this.hopper.setDefaultCommand(hopper.reverseCommand());
+
+    // shooter.setDefaultCommand(shooter.standbyCommand());
+
     // * Reset heading with right stick button
-    //TODO: think of a better button to bind this to
     this.DRIVER.rightStickButton().onTrue(this.m_swerveChassis.zeroHeadingCommand());
 
     DRIVER.leftBumper().onTrue(m_swerveChassis.enableSpeedAlteratorCommand(lookTowards)).onFalse(m_swerveChassis.disableSpeedAlteratorCommand());
-    DRIVER.rightButton().onTrue(CompoundCommands.completeShootCommand(shooter, indexer, hopper, m_swerveChassis));
-    DRIVER.bottomButton().onTrue(new ParallelCommandGroup(
-      intake.setInCommand()//,
-      // intakePivot.register();
-    ));
-    DRIVER.topButton().onTrue(intake.setOutCommand());
+    DRIVER.rightBumper().onTrue(m_swerveChassis.enableSpeedAlteratorCommand(trenchPass)).onFalse(m_swerveChassis.disableSpeedAlteratorCommand());
 
-    // Self Destruct Command
-    DRIVER.startButton().onTrue(Commands.runOnce(orchestra::play).ignoringDisable(true));
+    DRIVER.rightButton().whileTrue(CompoundCommands.completeShootCommand(shooter, indexer, hopper, m_swerveChassis))
+      .onFalse(shooter.standbyCommand());
+    // DRIVER.bottomButton().whileTrue(intake.setInCommand());
+    // DRIVER.topButton().whileTrue(intake.setOutCommand());
+
+    // DRIVER.rightButton().whileTrue(CompoundCommands.manualShootCommand(shooter, indexer, hopper, ShooterConstants.manual3));
+    DRIVER.bottomButton().whileTrue(intake.setInCommand());
+
+    // Self Destruct Commandn
+    DRIVER.startButton().onTrue(Commands.runOnce(() -> { orchestra.loadMusic("rickroll.chrp"); orchestra.play(); }).ignoringDisable(true));
+    OPERATOR.startButton().onTrue(Commands.runOnce(() -> { orchestra.loadMusic("megalovania.chrp"); orchestra.play(); }).ignoringDisable(true));
+
+    SmartDashboard.putData("Sing/rick", Commands.runOnce(() -> { orchestra.loadMusic("rickroll.chrp"); orchestra.play(); }).ignoringDisable(true));
+    SmartDashboard.putData("Sing/megalovania", Commands.runOnce(() -> { orchestra.loadMusic("megalovania.chrp"); orchestra.play(); }).ignoringDisable(true));
+    SmartDashboard.putData("Sing/topgun", Commands.runOnce(() -> { orchestra.loadMusic("topgun.chrp"); orchestra.play(); }).ignoringDisable(true));
 
     // ! OPERATOR
-    // OPERATOR.topButton().onTrue(CompoundCommands.manualShootCommand(shooter, indexer, hopper, ShooterConstants.manual1));
-    // OPERATOR.rightButton().onTrue(CompoundCommands.manualShootCommand(shooter, indexer, hopper, ShooterConstants.manual2));
-    // OPERATOR.leftButton().onTrue(CompoundCommands.manualShootCommand(shooter, indexer, hopper, ShooterConstants.manual3));
-    // OPERATOR.bottomButton().onTrue(CompoundCommands.manualShootCommand(shooter, indexer, hopper, ShooterConstants.manual4));
+    OPERATOR.topButton().whileTrue(CompoundCommands.manualShootCommand(shooter, indexer, hopper, ShooterConstants.manual4));
+    // OPERATOR.rightButton().whileTrue(CompoundCommands.manualShootCommand(shooter, indexer, hopper, ShooterConstants.manual2));
+    OPERATOR.rightButton().whileTrue(CompoundCommands.completeShootCommand(shooter, indexer, hopper, m_swerveChassis));
+    OPERATOR.leftButton().whileTrue(CompoundCommands.manualShootCommand(shooter, indexer, hopper, ShooterConstants.manual3));
+    OPERATOR.bottomButton().whileTrue(CompoundCommands.completeCalibrationCommand(shooter, indexer, hopper));
 
-    
-    // OPERATOR.topButton().onTrue(intakePivot.setPositionCommand(IntakeConstants.manual1));
-    // OPERATOR.rightButton().onTrue(intakePivot.setPositionCommand(IntakeConstants.manual2));
-    // OPERATOR.leftButton().onTrue(intakePivot.setPositionCommand(IntakeConstants.manual3));
-    // OPERATOR.bottomButton().onTrue(intakePivot.setPositionCommand(IntakeConstants.manual4));
+    OPERATOR.rightBumper().onTrue(intakePivot.setDownCommand());
+    OPERATOR.leftBumper().onTrue(intakePivot.setUpCommand());
+
+    OPERATOR.leftTrigger().whileTrue(intake.setInCommand());
+    OPERATOR.rightTrigger().whileTrue(intake.setOutCommand());
+
+    OPERATOR.rightStickButton()
+      .onTrue(m_swerveChassis.enableSpeedAlteratorCommand(shake))
+      .onFalse(m_swerveChassis.disableSpeedAlteratorCommand());
+
+    OPERATOR.leftStickButton()
+      .whileTrue(
+        Commands.run(
+          m_swerveChassis::xFormation,
+          m_swerveChassis
+        )
+      );
+
+    OPERATOR.povRight().whileTrue(indexer.indexCommand());
+    // OPERATOR.povRight().whileTrue(hopper.hopperationCommand());
+    OPERATOR.povLeft().onTrue(CompoundCommands.autoShootCommand(shooter, m_odometry::getEstimatedPosition, indexer, hopper, intake, intakePivot, m_swerveChassis));
+    OPERATOR.povUp().whileTrue(indexer.ejectCommand().alongWith(hopper.reverseCommand()));
+    // DRIVER.povUp().whileTrue(indexer.ejectCommand().alongWith(hopper.reverseCommand()));
+    OPERATOR.povDown().whileTrue(CompoundCommands.completeCalibrationCommand(shooter, indexer, hopper));
   }
 
   public Command getAutonomousCommand() {
-    return m_autonomousChooser.getSelected();
+    return m_autonomousChooser.getSelected().finallyDo(m_swerveChassis::disableSpeedAlterator);
   }
 }
