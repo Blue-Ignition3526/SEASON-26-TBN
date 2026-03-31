@@ -1,5 +1,7 @@
 package lib.BlueShift.math;
 
+import edu.wpi.first.math.geometry.Rotation2d;
+
 public class BlueMathUtils {
     public static double mapDouble(double x, double in_min, double in_max, double out_min, double out_max) {
         return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
@@ -12,4 +14,13 @@ public class BlueMathUtils {
     public static double clamp(double value, double min, double max) {
         return Math.max(Math.min(value, max), min);
     }
+
+    public static Rotation2d optimize(Rotation2d currentAngle, Rotation2d targetAngle) {
+    var delta = targetAngle.minus(currentAngle);
+    if (Math.abs(delta.getDegrees()) > 90.0) {
+      return targetAngle.rotateBy(Rotation2d.kPi);
+    } else {
+        return targetAngle;
+    }
+  }
 }

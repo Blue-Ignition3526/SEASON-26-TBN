@@ -35,14 +35,16 @@ public class ShooterConstants {
   // TODO: calibrate automatic speeds (RPS)
   public static final TreeMap<Distance, Double> kSpeedsMap = new TreeMap<>();
   static {
-    kSpeedsMap.put(Meters.of(1.55), 40.0);
-    kSpeedsMap.put(Meters.of(2.00), 43.0);
-    kSpeedsMap.put(Meters.of(2.5), 45.0);
-    kSpeedsMap.put(Meters.of(3), 46.0);
-    kSpeedsMap.put(Meters.of(3.5), 50.0);
-    kSpeedsMap.put(Meters.of(4), 53.0);
-    kSpeedsMap.put(Meters.of(5), 56.0);
-    kSpeedsMap.put(Meters.of(6), 67.0);
+    kSpeedsMap.put(Meters.of(0.0), 41.5);
+    kSpeedsMap.put(Meters.of(1.5), 41.5);
+    kSpeedsMap.put(Meters.of(2.0), 44.5);
+    kSpeedsMap.put(Meters.of(2.5), 46.5);
+    kSpeedsMap.put(Meters.of(3.0), 47.5);
+    kSpeedsMap.put(Meters.of(3.5), 51.5);
+    kSpeedsMap.put(Meters.of(4.0), 54.5);
+    kSpeedsMap.put(Meters.of(5.0), 57.5);
+    kSpeedsMap.put(Meters.of(6.0), 68.5);
+    kSpeedsMap.put(Meters.of(999999.9999), 68.5);
   }
 
 

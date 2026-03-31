@@ -41,6 +41,7 @@ public class KeepHeading extends SpeedAlterator {
                 updatedTarget = false;
             }
 
+            //? Try using Gyro to set when real angular speed is < epsilon
             if(timeSinceStop + 500 <= System.currentTimeMillis() && !updatedTarget) {
                 targetAngle = poseSupplier.get().getRotation().getRadians();
                 Constants.SwerveDriveConstants.PoseControllers.rotationPID.reset(poseSupplier.get().getRotation().getRadians());

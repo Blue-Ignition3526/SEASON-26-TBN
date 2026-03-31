@@ -42,6 +42,7 @@ import lib.Elastic.Notification;
 import lib.Elastic.Notification.NotificationLevel;
 import lib.BlueShift.control.CustomController;
 import lib.BlueShift.control.CustomController.CustomControllerType;
+import lib.BlueShift.math.BlueMathUtils;
 import lib.BlueShift.odometry.swerve.BlueShiftOdometry;
 import lib.BlueShift.odometry.vision.camera.LimelightOdometryCamera;
 import lib.BlueShift.odometry.vision.camera.VisionOdometryFilters;
@@ -114,7 +115,7 @@ public class RobotContainer {
 
     this.lookTowards = new LookToward(m_odometry::getEstimatedPosition, TrajectoryGetter.hubPos());
     this.shake = new Shake(Rotation2d.fromDegrees(1), m_swerveChassis::getHeading);
-    this.trenchPass = new ByHeading(() -> m_swerveChassis.getHeading().getRadians(), () -> 0.0);
+    this.trenchPass = new ByHeading(() -> m_swerveChassis.getHeading().getRadians(), () -> BlueMathUtils.optimize(m_gyro.getHeading(), Rotation2d.kZero).getRadians());
     this.keepHeading = new KeepHeading(m_odometry::getEstimatedPosition, 0.05);
 
     this.m_swerveChassis.setDefaultAlterator(keepHeading);
@@ -187,6 +188,9 @@ public class RobotContainer {
       )
     );
 
+    this.indexer.setDefaultCommand(indexer.ejectCommand());
+    this.hopper.setDefaultCommand(hopper.reverseCommand());
+
     // shooter.setDefaultCommand(shooter.standbyCommand());
 
     // * Reset heading with right stick button
@@ -194,7 +198,9 @@ public class RobotContainer {
 
     DRIVER.leftBumper().onTrue(m_swerveChassis.enableSpeedAlteratorCommand(lookTowards)).onFalse(m_swerveChassis.disableSpeedAlteratorCommand());
     DRIVER.rightBumper().onTrue(m_swerveChassis.enableSpeedAlteratorCommand(trenchPass)).onFalse(m_swerveChassis.disableSpeedAlteratorCommand());
-    DRIVER.rightButton().whileTrue(CompoundCommands.completeShootCommand(shooter, indexer, hopper, m_swerveChassis));
+
+    DRIVER.rightButton().whileTrue(CompoundCommands.completeShootCommand(shooter, indexer, hopper, m_swerveChassis))
+      .onFalse(shooter.standbyCommand());
     // DRIVER.bottomButton().whileTrue(intake.setInCommand());
     // DRIVER.topButton().whileTrue(intake.setOutCommand());
 

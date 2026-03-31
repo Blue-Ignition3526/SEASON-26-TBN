@@ -74,7 +74,7 @@ public class CompoundCommands {
         pivot.setDownWaitCommand()
       ).repeatedly()
         .raceWith(
-      new WaitCommand(7)))
+      new WaitCommand(10)))
         .andThen(
       pivot.setUpCommand())
 
